@@ -92,6 +92,7 @@ footer a{color:var(--gold);font-weight:600;text-underline-offset:3px}
 .lb .meta .d{font-weight:400}
 .hintshare{color:#F1E3CF;opacity:.85;font-size:.82rem;max-width:26rem;text-align:center;margin:0}
 .lb .acts{display:flex;gap:.6rem;flex-wrap:wrap;justify-content:center}
+.bar button#send2{background:rgba(255,255,255,.18);color:inherit;text-decoration:none;border:1px solid rgba(255,255,255,.5);border-radius:999px;padding:.55rem .9rem}
 .lb .acts a,.lb .acts button{border-radius:999px;padding:.7rem 1.2rem;font-weight:600;text-decoration:none;border:1px solid rgba(255,255,255,.35);background:transparent;color:#F6EBDD}
 .lb .acts a{background:var(--wa);color:var(--wa-fg);border-color:var(--wa)}
 .lb .acts button[aria-pressed="true"]{background:#E8A8CF;color:#2B1424;border-color:#E8A8CF}
@@ -131,14 +132,14 @@ footer a{color:var(--gold);font-weight:600;text-underline-offset:3px}
 </ol></section>
 <footer>Maison d'habillement Nancy, Kinshasa<br>WhatsApp : <a id="numlink" target="_blank" rel="noopener"></a></footer>
 <a class="fab" id="fab" target="_blank" rel="noopener" aria-label="Écrire à la boutique sur WhatsApp"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M12.04 2a9.9 9.9 0 0 0-8.4 15.1L2 22l5-1.6A9.9 9.9 0 1 0 12.04 2Zm0 18.1c-1.5 0-2.9-.4-4.2-1.2l-.3-.2-3 .9 1-2.9-.2-.3a8.1 8.1 0 1 1 6.7 3.7Zm4.5-6.1c-.2-.1-1.5-.7-1.7-.8-.2-.1-.4-.1-.6.1l-.8 1c-.1.2-.3.2-.5.1a6.6 6.6 0 0 1-3.3-2.9c-.2-.4.2-.4.7-1.3.1-.2 0-.3 0-.5l-.8-1.8c-.2-.5-.4-.4-.6-.4h-.5c-.2 0-.5.1-.7.3-.2.3-.9.9-.9 2.200s.9 2.500 1 2.700c.2.200 1.800 2.800 4.400 3.900 1.600.7 2.200.7 3 .6.500-.1 1.500-.6 1.700-1.200.2-.6.200-1.100.1-1.200-.1-.1-.2-.2-.5-.3Z"/></svg><span class="fabt">Écrire sur WhatsApp</span></a>
-<div class="bar" id="bar" hidden><b id="count"></b><div class="acts"><button type="button" id="clear">Tout enlever</button><a id="send" target="_blank" rel="noopener">Envoyer ma liste</a></div></div>
+<div class="bar" id="bar" hidden><b id="count"></b><div class="acts"><button type="button" id="clear">Tout enlever</button><a id="send" target="_blank" rel="noopener">Contacter sur WhatsApp</a><button type="button" id="send2" hidden>Avec les photos</button></div></div>
 <div class="lb" id="lb" role="dialog" aria-modal="true" aria-label="Photo agrandie" hidden>
   <button class="x" id="lbx" type="button" aria-label="Fermer">×</button>
   <button class="nav prev" id="lbp" type="button" aria-label="Précédent">‹</button>
   <div class="pic"><img id="lbimg" alt=""></div>
   <div class="meta"><h3 id="lbn"></h3><p id="lbpr"></p><p class="d" id="lbd"></p></div>
-  <div class="acts"><a id="lbo" target="_blank" rel="noopener">Commander sur WhatsApp</a><button type="button" id="lbh" aria-pressed="false"></button></div>
-  <p class="hintshare" id="hs">La photo de la robe est jointe au message. Choisissez WhatsApp puis le contact de la boutique.</p>
+  <div class="acts"><a id="lbo" target="_blank" rel="noopener">Contacter sur WhatsApp</a><button type="button" id="lbp2" hidden>Envoyer avec la photo</button><button type="button" id="lbh" aria-pressed="false"></button></div>
+  <p class="hintshare" id="hs">« Contacter » ouvre directement le chat de la boutique. « Envoyer avec la photo » joint l'image : choisissez ensuite le contact de la boutique.</p>
   <a id="lbdl" class="hintshare" download hidden style="color:var(--gold);font-weight:600">Enregistrer la photo pour la joindre au message</a>
   <button class="nav next" id="lbnx" type="button" aria-label="Suivant">›</button>
 </div>
@@ -150,40 +151,39 @@ var $=function(s){return document.querySelector(s)};
 var items=[];COLORS.forEach(function(c,ci){c.imgs.forEach(function(m){items.push({id:items.length,g:ci,gname:c.name,name:m.name,price:m.price,desc:m.desc,file:m.file,src:m.src})})});
 var picked={},filt=-1,open=-1;
 function link(t){return "https://wa.me/"+SHOP.wa+"?text="+encodeURIComponent(t)}
-function msg(list){
+function ref(it){return "Réf. "+("0"+(it.id+1)).slice(-2)}
+function msg(list,withPhoto){
   var n=list.length,noPrice=list.some(function(it){return !it.price});
-  var head="Bonjour "+SHOP.name+", je suis intéressé(e) par "+(n>1?"ces "+n+" robes (photos jointes)":"cette robe (photo jointe)")+" :";
-  var lines=list.map(function(it){return "- "+it.name+(it.price?" : "+it.price+" $":"")});
+  var head="Bonjour "+SHOP.name+", je suis intéressé(e) par "+(n>1?"ces "+n+" robes":"cette robe")+(withPhoto?(n>1?" (photos jointes)":" (photo jointe)"):"")+" :";
+  var lines=list.map(function(it){return "- "+it.name+" ("+ref(it)+")"+(it.price?" : "+it.price+" $":"")});
   var ask=noPrice?(n>1?"Pouvez-vous me donner le prix des robes dont le prix n'est pas indiqué, et me confirmer les tailles disponibles et la livraison ?":"Quel est le prix de cette robe ? Pouvez-vous aussi me confirmer les tailles disponibles et la livraison ?"):(n>1?"Pouvez-vous me confirmer leur disponibilité, les tailles et la livraison ?":"Pouvez-vous me confirmer sa disponibilité, les tailles et la livraison ?");
   return head+"\n"+lines.join("\n")+"\n\n"+ask;
 }
 var fileDone={},canFiles=false;
 try{var tf=new File([new Blob(["x"])],"a.jpg",{type:"image/jpeg"});canFiles=!!(navigator.share&&navigator.canShare&&navigator.canShare({files:[tf]}))}catch(e){}
 if(canFiles)items.forEach(function(it){fetch(it.src).then(function(r){return r.blob()}).then(function(bl){fileDone[it.id]=new File([bl],it.file,{type:"image/jpeg"})}).catch(function(){})});
-function share(list,e){
-  if(!canFiles)return;
+function share(list){
   var files=list.map(function(it){return fileDone[it.id]});
-  if(!files.every(Boolean)||!navigator.canShare({files:files}))return;
-  e.preventDefault();var href=link(msg(list));
-  navigator.share({files:files,text:msg(list)}).catch(function(err){if(!err||err.name!=="AbortError")window.open(href,"_blank")});
+  if(!files.every(Boolean)||!navigator.canShare({files:files})){window.open(link(msg(list)),"_blank");return}
+  navigator.share({files:files,text:msg(list,true)}).catch(function(err){if(!err||err.name!=="AbortError")window.open(link(msg(list)),"_blank")});
 }
 function pr(it){return it.price?it.price+" $":"Prix sur WhatsApp"}
 $("#strip").innerHTML=items.slice(0,8).map(function(it){return '<img src="'+it.src+'" alt="'+it.name+'" loading="lazy">'}).join("");
-$("#grid").innerHTML=items.map(function(it){return '<button type="button" class="card" data-id="'+it.id+'" data-g="'+it.g+'"><img src="'+it.src+'" alt="'+it.name+'" loading="lazy">'+(it.price?'<span class="tag">'+it.price+' $</span>':'')+'<span class="cap"><b>'+it.name+'</b><span>'+(it.price?'':'Demander le prix')+'</span></span><span class="heart" role="button" aria-label="Garder cette robe" aria-pressed="false">♡</span></button>'}).join("");
+$("#grid").innerHTML=items.map(function(it){return '<button type="button" class="card" data-id="'+it.id+'" data-g="'+it.g+'"><img src="'+it.src+'" alt="'+it.name+'" loading="lazy">'+(it.price?'<span class="tag">'+it.price+' $</span>':'')+'<span class="cap"><b>'+it.name+'</b><span>'+ref(it)+(it.price?'':' · Demander le prix')+'</span></span><span class="heart" role="button" aria-label="Garder cette robe" aria-pressed="false">♡</span></button>'}).join("");
 function chosen(){return items.filter(function(it){return picked[it.id]})}
 function draw(){
   $("#filters").innerHTML=['<button type="button" data-f="-1" aria-pressed="'+(filt===-1)+'">Toutes ('+items.length+')</button>'].concat(COLORS.map(function(c,i){return '<button type="button" data-f="'+i+'" aria-pressed="'+(filt===i)+'"><i style="background:'+c.swatch+'"></i>'+c.name+'</button>'})).join("");
   [].forEach.call($("#grid").children,function(b){var id=+b.dataset.id,h=b.querySelector(".heart");b.hidden=filt!==-1&&+b.dataset.g!==filt;h.setAttribute("aria-pressed",!!picked[id]);h.textContent=picked[id]?"♥":"♡"});
   var ch=chosen(),n=ch.length;$("#bar").hidden=!n;$("#fab").hidden=!!n;
   $("#count").textContent=n+(n>1?" robes gardées":" robe gardée");
-  $("#send").href=link(msg(ch));
-  $("#send").onclick=function(e){share(ch,e)};
+  $("#send").href=link(msg(ch));$("#send2").hidden=!canFiles;
+  $("#send2").onclick=function(){share(ch)};
 }
 function visible(){return items.filter(function(it){return filt===-1||it.g===filt})}
 function show(id){
   open=id;var it=items[id];$("#lb").hidden=false;document.body.style.overflow="hidden";
   $("#lbimg").src=it.src;$("#lbimg").alt=it.name;$("#lbn").textContent=it.name;$("#lbpr").textContent=pr(it);$("#lbd").textContent=it.desc||"";
-  $("#lbo").href=link(msg([it]));$("#lbo").textContent=it.price?"Commander sur WhatsApp":"Demander le prix sur WhatsApp";$("#lbo").onclick=function(e){share([it],e)};$("#lbdl").href=it.src;$("#lbdl").download=it.file;$("#lbdl").hidden=canFiles;$("#hs").hidden=!canFiles;
+  $("#lbo").href=link(msg([it]));$("#lbo").textContent=it.price?"Commander sur WhatsApp":"Demander le prix sur WhatsApp";$("#lbp2").onclick=function(){share([it])};$("#lbp2").hidden=!canFiles;$("#lbdl").href=it.src;$("#lbdl").download=it.file;$("#lbdl").hidden=canFiles;$("#hs").hidden=!canFiles;
   $("#lbh").setAttribute("aria-pressed",!!picked[id]);$("#lbh").textContent=picked[id]?"♥ Gardée (retirer)":"♡ Garder cette robe";
 }
 function step(d){var v=visible();var i=v.findIndex(function(x){return x.id===open});if(i<0)return;show(v[(i+d+v.length)%v.length].id)}
